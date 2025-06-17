@@ -8,7 +8,9 @@ const userSchema = new Schema({
     },
     userPassword:{
         type:String,
-        required:[true,"UserPassword must be provided"]
+        required:[true,"UserPassword must be provided"],
+        select:false
+        
     },
     userEmail:{
         type:String,
@@ -25,11 +27,13 @@ const userSchema = new Schema({
         default:"customer"
     },
     otp:{
-        type:Number
+        type:Number,
+        select:false
     },
     isOtpVerified : {
         type : Boolean,
-        default : false
+        default : false,
+        select:false
     }
 },{
     timeStamps:true

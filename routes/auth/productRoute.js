@@ -1,5 +1,5 @@
 const express = require("express");
-const { createProduct, getProducts, getProductById } = require("../../controller/admin/products/productController");
+const { createProduct, getProducts, getProductById, deleteProduct } = require("../../controller/admin/products/productController");
 const isAuthenticated = require("../../middleware/isAuthenticated");
 const permitTo = require("../../middleware/permitTo");
 const router = express.Router();
@@ -8,6 +8,7 @@ const router = express.Router();
 // accessing multer file handling image
 const {multer,storage} = require("../../middleware/multerConfig");   // importing multer,storage from multerConfig.js
 const catchAsync = require("../../services/catchAsync");
+const { editProduct } = require("../../controller/admin/products/productController");
 const upload = multer({storage:storage})    
 
 // here before creating products , need to see if somebody user/admin/super-admin/customer is logged in authenticated or not. After give access/permission to customer/admin/super-admin to whom you want to give permission to create products,
@@ -16,6 +17,10 @@ router.route("/products")
 .post(isAuthenticated,permitTo("admin"),upload.single("productImage"), catchAsync(createProduct))
 .get(catchAsync(getProducts))    // since authentication is not required , because usually we see the products without loggin to it e.g Daraz . So ,if no authentication no authorization(restrictTo/permissin)
 
+router.route("/products/:id")
+.get(catchAsync(getProductById))
+.delete(isAuthenticated,permitTo("admin"),catchAsync(deleteProduct))
+.patch(isAuthenticated,permitTo("admin"),upload.single("productImage"),catchAsync(editProduct))
 
-router.route("/products/:id").get(catchAsync(getProductById))
+
 module.exports = router

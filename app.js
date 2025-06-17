@@ -19,12 +19,15 @@ app.use(express.static("./uploads"))
 // ROUTES
 const authRoute = require("./routes/auth/authRoute");
 const productRoute = require("./routes/auth/productRoute")
+const adminUsersRoute = require("./routes/admin/adminUsersRoute")
 
 
 
 // middleware
 app.use("/",authRoute)
 app.use("/",productRoute)
+app.use("/",adminUsersRoute)
+
 
 
 app.get("/",(req,res)=>{
