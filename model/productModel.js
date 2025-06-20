@@ -25,7 +25,6 @@ const productSchema = new Schema({
     productImage:{
         type:String
     }
-    
 
 },{
     timestamps:true

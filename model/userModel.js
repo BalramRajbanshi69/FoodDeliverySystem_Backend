@@ -9,13 +9,14 @@ const userSchema = new Schema({
     userPassword:{
         type:String,
         required:[true,"UserPassword must be provided"],
-        select:false
+        // select:false
         
     },
     userEmail:{
         type:String,
         unique:true,
-        required:[true,"UserEmail is required"]
+        required:[true,"UserEmail is required"],
+        lowercase:true
     },
     userPhoneNumber:{
         type:Number,
@@ -34,7 +35,10 @@ const userSchema = new Schema({
         type : Boolean,
         default : false,
         select:false
-    }
+    },
+    cart:[{                                // returns an array of products 
+        type:Schema.Types.ObjectId,         // reference to Product model , inserts product id
+        ref:"Product"}]
 },{
     timeStamps:true
 })
