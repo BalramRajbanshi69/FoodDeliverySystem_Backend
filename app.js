@@ -1,11 +1,18 @@
 require("dotenv").config();
 const express = require("express");
+const cors = require("cors")
 const app = express();
 const PORT = process.env.PORT || 4000;
 const DBConnection = require("./Database/DB")
 DBConnection();
 
+const {Server} = require("socket.io");   // socket.io for real-time communication
+// OR
+// const Server = require("socket.io").Server;   // socket.io for real-time communication
 
+app.use(cors({
+    origin:"*"
+}))
 app.use(express.json());
 app.use(express.urlencoded({extended : true}))
 
@@ -24,6 +31,9 @@ const userReviewRoute = require("./routes/user/userReviewRoute")
 const profileRoute = require("./routes/user/profileRoute")
 const cartRoute = require("./routes/user/cartRoute")
 const orderRoute = require("./routes/user/orderRoute")
+const adminOrderRoute = require("./routes/admin/adminOrderRoute")
+const paymentRoute = require("./routes/user/paymentRoute");
+const User = require("./model/userModel");
 
 
 
@@ -31,10 +41,12 @@ const orderRoute = require("./routes/user/orderRoute")
 app.use("/api/auth",authRoute)
 app.use("/api/products",productRoute)
 app.use("/api/admin",adminUsersRoute)
+app.use("/api/admin",adminOrderRoute)
 app.use("/api/reviews",userReviewRoute)
 app.use("/api/profile",profileRoute)
 app.use("/api/cart",cartRoute)
 app.use("/api/order",orderRoute)
+app.use("/api/payment",paymentRoute)
 
 
 
@@ -44,6 +56,33 @@ app.get("/",(req,res)=>{
 })
 
 
-app.listen(PORT,(req,res)=>{
+const server = app.listen(PORT,(req,res)=>{                 // starting the server
     console.log(`The server is running on PORT ${PORT}`);  
 })
+
+const io = new Server(server);                              // initializing socket.io with the server
+// io.on("connection",(socket)=>{                              // listening for connection event
+//     // console.log('A User connected');                        // when a user connects, this event is triggered
+//     // socket.on("disconnect",()=>{
+//     //     console.log('A User disconnected');       // when a user disconnects, this event is triggered
+ 
+//     socket.on("register",async(data)=>{                        // when a user sends a message, this event is triggered
+//         const {email,userName,phoneNumber,password} = data;
+//         // await User.create({
+//         //     userEmail:email,
+//         //     userName:userName,
+//         //     userPhoneNumber:phoneNumber,
+//         //     userPassword:password
+//         // })
+//         // socket.emit("response",{message:"User registered successfully"});  // sending a response back to the user
+//         io.to(socket.id).emit("response",{message:"User registered successfully"});   // io.to(socket.id) sends the response to the specific user who registered
+//         // console.log("A user registered");   
+//     })   
+//     })
+
+
+const getSocketId = ()=>{
+    return io
+}
+
+module.exports.getSocketId = getSocketId;  // exporting the getSocketId function to use it in other files

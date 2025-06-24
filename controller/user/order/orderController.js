@@ -57,40 +57,98 @@ exports.getMyOrders = async(req,res)=>{
 
 
 
-// getSingleOrder
-exports.getSingleOrder = async(req,res)=>{
+// deleteOrder
+exports.deleteMyOrder = async(req,res)=>{
+  const userId = req.user.id;
+  const id = req.params.id; // assuming order ID is passed as a URL parameter
+
+  // check if order exists or not
+  const order = await Order.findById(id);
+  if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+  }
+
+  // check if order belongs to the user
+  if(order.user !== userId){
+        return res.status(403).json({ message: "You are not authorized to delete this order" });
+  }
+
+  await Order.findByIdAndDelete(id); // delete the order by ID
+  res.status(200).json({
+      message: "Order deleted successfully",
+      data:null
+  });
+}
+
+
+
+// updateOrder
+exports.updateMyOrder = async(req,res)=>{
     const userId = req.user.id; // assuming user ID is stored in req.user
-    const orderId = req.params.orderId; // assuming order ID is passed as a URL parameter
-
-    const order = await Order.findOne({ _id: orderId, user: userId }).populate({          // why findOne? because we want to get a single order by its ID and user ID
-        path:"items.product",                                      // why populate? because we want to get the product details in the order
-        model:"Product",                                            // why Product? because we want to get the product details from the Product model
-    })  
-
-    if (!order) {
-        return res.status(404).json({ message: "Order not found" });
+    const id = req.params.id; // assuming order ID is passed as a URL parameter
+    const {items,shippingAddress} = req.body; // assuming items and shippingAddress are passed in the request body
+    if(!items.length == 0 || !shippingAddress){   // why items.length == 0? because items is an array, so we need to check if it has at least one item
+        return res.status(400).json({ message: "Items and shipping address are required" });
     }
+
+    const existingOrder = await Order.findById(id); // find the order by ID
+    if (!existingOrder) {
+        return res.status(404).json({ message: "Order not found with that id" });
+    }
+
+    // Check if the order belongs to the user
+    if(existingOrder.user !== userId){
+        return res.status(403).json({ message: "You are not authorized to update this order" });
+    }
+
+    // Check if the order is already on the way
+    if(existingOrder.orderStatus === "ontheway"){
+        return res.status(400).json({ message: "Order is already on the way, cannot update" });
+    }
+
+
+    const updateOrder = await Order.findByIdAndUpdate(id,{
+        items,
+        shippingAddress
+    },{
+        new:true // return the updated order
+    })
     res.status(200).json({
-        message: "Order fetched successfully",
-        data:order
+        message: "Order updated successfully",
+        data:updateOrder
     });
 }
 
 
 
 
-// deleteOrder
-exports.deleteOrder = async(req,res)=>{
-    const userId = req.user.id; // assuming user ID is stored in req.user
-    const orderId = req.params.orderId; // assuming order ID is passed as a URL parameter
+// cancelOrder
+exports.cancelOrder = async(req,res)=>{
+    const id = req.params.id; // assuming order ID is passed as a URL parameter
 
-    const order = await Order.findOneAndDelete({ _id: orderId, user: userId }); // why findOneAndDelete? because we want to delete a single order by its ID and user ID
-
+    // check if order exists or not
+    const order = await Order.findById(id);
     if (!order) {
         return res.status(404).json({ message: "Order not found" });
     }
+
+    // check if order belongs to the user
+    if(order.user !== orderId){
+        return res.status(403).json({ message: "You are not authorized to cancel this order" });
+    }
+
+    // check if the order is in a cancellable state
+    if(order.orderStatus !== "Pending"){     // why Pending? because we only allow cancellation for orders that are still pending, not for orders that are already on the way or delivered
+        return res.status(400).json({ message: "Order is not in a cancellable state" });
+    }
+
+    const updatedOrder = await Order.findByIdAndUpdate(id,{
+        orderStatus:"cancelled"
+    },{
+        new:true // return the updated order
+    })
     res.status(200).json({
-        message: "Order deleted successfully",
-        data:order
+        message: "Order cancelled successfully",
+        data: updatedOrder
     });
 }

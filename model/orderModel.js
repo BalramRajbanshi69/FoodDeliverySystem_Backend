@@ -24,18 +24,21 @@ const orderSchema = new Schema({
     },
     orderStatus: {
         type: String,
-        enum: ['Pending', 'Shipped', 'Delivered', 'Cancelled',"Preparation"],
-        default: 'Pending'
+        enum: ['pending', 'ontheway', 'delivered', 'cancelled',"preparation"],
+        default: 'pending'
     },
     paymentDetails:{
+        pidx:{
+            type:String
+        },
         method:{
             type:String,
-            enum:["COD","Khalti"]
+            enum:["COD","khalti"]
         },
         status: {
             type: String,
-            enum: ['Success', 'Pending', 'Failed'],
-            default: 'Pending'
+            enum: ['paid', 'pending', 'unpaid'],
+            default: 'pending'
         },
     },
     createdAt: {

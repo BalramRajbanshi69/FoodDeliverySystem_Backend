@@ -9,12 +9,12 @@ exports.getProducts = async (req, res) => {
      if (products.length == 0) {
        res.status(404).json({
          message: "No products found",
-         products: []
+         data: []
        });
      } else {
        res.status(200).json({
          message: "Products fetched successfully",
-         products: products,
+         data: products,
        });
      }
    };
