@@ -1,26 +1,34 @@
+
 const Order = require("../../../model/orderModel");
+const User = require("../../../model/userModel");
 
 exports.createOrder = async(req,res)=>{
     const userId = req.user.id; // assuming user ID is stored in req.user
-    const { items, totalAmount, shippingAddress, paymentDetails } = req.body;
+    const { items, totalAmount, shippingAddress, paymentDetails,phoneNumber } = req.body;
 
-    if (!items.length > 0 || !totalAmount || !shippingAddress || !paymentDetails) {          // why items.length>0? because items is an array, so we need to check if it has at least one item
+    if (!items.length > 0 || !totalAmount || !shippingAddress || !paymentDetails || !phoneNumber) {          // why items.length>0? because items is an array, so we need to check if it has at least one item
         return res.status(400).json({ message: "All fields are required" });
     }
 
-    const order = new Order({
+
+    const createdOrder = new Order({
         user: userId,
         items,
         totalAmount,
         shippingAddress,
+        phoneNumber,
         paymentDetails
     });
+    await createdOrder.save()
+    
+    const user = await User.findById(userId);
+    user.cart = []
+    await user.save();
 
-    await order.save();
     
     res.status(201).json({
         message: "Order created successfully",
-        data:order
+        data: createdOrder
     });
 }
 
@@ -30,7 +38,7 @@ exports.createOrder = async(req,res)=>{
 exports.getMyOrders = async(req,res)=>{
     const userId = req.user.id; // assuming user ID is stored in req.user
 
-    const orders = await Order.find({ user: userId }).populate({   // why populate? because we want to get the product details in the order
+    const order = await Order.find({ user: userId }).populate({   // why populate? because we want to get the product details in the order
         path:"items.product",                                      // why items.product? because items is an array of objects, each object has a product field which is an ObjectId referencing the Product model
         model:"Product",                                            // why Product? because we want to get the product details from the Product model
         select:"-productStockQuantity -createdAt -updatedAt -__v -reviews"                               // we can also use select to exclude some fields from the populated data, like productStockQuantity, productStatus, etc. // to exclude multiple fields, use select: "-field1 -field2" or select: "-productStockQuantity -productStatus -__v -createdAt" etc.
@@ -44,42 +52,46 @@ exports.getMyOrders = async(req,res)=>{
         // }
     })
 
-    if (!orders || orders.length === 0) {
+    if (!order || order.length === 0) {
         return res.status(404).json({ message: "No orders found for this user" });
     }
     res.status(200).json({
         message: "Orders fetched successfully",
-        data:orders
+        data:order
     });
 
 }
 
 
-
-
-// deleteOrder
+                
+ // deleteOrder
 exports.deleteMyOrder = async(req,res)=>{
-  const userId = req.user.id;
-  const id = req.params.id; // assuming order ID is passed as a URL parameter
+    const userId = req.user.id 
+    const {id} = req.params 
 
-  // check if order exists or not
-  const order = await Order.findById(id);
-  if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-  }
-
-  // check if order belongs to the user
-  if(order.user !== userId){
-        return res.status(403).json({ message: "You are not authorized to delete this order" });
-  }
-
-  await Order.findByIdAndDelete(id); // delete the order by ID
-  res.status(200).json({
-      message: "Order deleted successfully",
-      data:null
-  });
+    // check if order exists or not 
+    const order = await Order.findById(id)
+    if(!order){
+        return res.status(400).json({
+            message : "No order with that id"
+        })
+    }
+    if(order.user != userId){
+       return res.status(400).json({
+        message : "You don't have permission to delete this order"
+       })
+    }
+    if(order.orderStatus != "pending"){
+        return res.status(400).json({
+            message : "You cannot delete this order as it is not pending"
+        })
+    }
+    await Order.findByIdAndDelete(id)
+    res.status(200).json({
+        message : "Order deleted successfully",
+        data : null
+    })
 }
-
 
 
 // updateOrder
@@ -124,31 +136,38 @@ exports.updateMyOrder = async(req,res)=>{
 
 // cancelOrder
 exports.cancelOrder = async(req,res)=>{
-    const id = req.params.id; // assuming order ID is passed as a URL parameter
+    const {id}  = req.body 
+    const userId = req.user.id 
+  
 
     // check if order exists or not
-    const order = await Order.findById(id);
-    if (!order) {
-        return res.status(404).json({ message: "Order not found" });
+    const order = await Order.findById(id)
+    if(!order){
+        return res.status(400).json({
+            message : "No order with that id"
+        })
     }
+    // console.log(id);
+    // console.log(order);
+    // console.log(userId);
+    
 
-    // check if order belongs to the user
-    if(order.user !== orderId){
-        return res.status(403).json({ message: "You are not authorized to cancel this order" });
+    if(order.user != userId){
+       return res.status(400).json({
+        message : "You don't have permission to delete this order"
+       })
     }
-
-    // check if the order is in a cancellable state
-    if(order.orderStatus !== "Pending"){     // why Pending? because we only allow cancellation for orders that are still pending, not for orders that are already on the way or delivered
-        return res.status(400).json({ message: "Order is not in a cancellable state" });
+    if(order.orderStatus !=="pending"){
+        return res.status(400).json({
+            message : "You cannot cancel this order as it is not pending"
+        })
     }
-
-    const updatedOrder = await Order.findByIdAndUpdate(id,{
-        orderStatus:"cancelled"
-    },{
-        new:true // return the updated order
-    })
+   const updatedOrder =  await Order.findByIdAndUpdate(id,{
+        orderStatus : "cancelled"
+    },{new:true})
     res.status(200).json({
-        message: "Order cancelled successfully",
-        data: updatedOrder
-    });
-}
+        message : "Order cancelled successfully",
+        data : updatedOrder
+    })
+
+} 

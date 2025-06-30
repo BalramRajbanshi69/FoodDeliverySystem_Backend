@@ -26,6 +26,8 @@ const isAuthenticated = async(req,res,next)=>{
     // alternative waY second
    try {
      const decoded = await promisify(jwt.verify)(token,JWT_SECRET);
+    //  console.log("decoded",decoded);
+     
     const doesUserExist = await User.findOne({_id:decoded.id});
     if(!doesUserExist){
        return res.status(403).json({

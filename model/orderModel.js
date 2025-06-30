@@ -22,6 +22,10 @@ const orderSchema = new Schema({
         type: String,
         required: true
     },
+    phoneNumber:{
+        type:Number,
+        required:true
+    },
     orderStatus: {
         type: String,
         enum: ['pending', 'ontheway', 'delivered', 'cancelled',"preparation"],

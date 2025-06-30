@@ -36,9 +36,15 @@ const userSchema = new Schema({
         default : false,
         select:false
     },
-    cart:[{                                // returns an array of products 
-        type:Schema.Types.ObjectId,         // reference to Product model , inserts product id
-        ref:"Product"}]
+    cart:[
+        {
+        quantity:{
+            type:Number,
+            required:true
+        },
+        product:{type:Schema.Types.ObjectId, ref:"Product"}
+    }]
+        
 },{
     timeStamps:true
 })

@@ -11,10 +11,9 @@ router.route("/")
 
 router.route("/cancel").patch(isAuthenticated,catchAsync(cancelOrder))  // cancel an order by its ID, which is passed as a parameter in the URL
 
-router.route("/:orderId")
+router.route("/:id")
 .patch(isAuthenticated,catchAsync(updateMyOrder))     // update a single order by its ID, which is passed as a parameter in the URL
 .delete(isAuthenticated,catchAsync(deleteMyOrder));      // delete a single order by its ID, which is passed as a parameter in the URL
-
 
 
 module.exports = router;
