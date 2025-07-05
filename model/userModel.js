@@ -43,7 +43,12 @@ const userSchema = new Schema({
             required:true
         },
         product:{type:Schema.Types.ObjectId, ref:"Product"}
-    }]
+    }],
+
+     createdAt: {
+        type: Date,
+        default: Date.now
+    }
         
 },{
     timeStamps:true

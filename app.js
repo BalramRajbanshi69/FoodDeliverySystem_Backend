@@ -33,7 +33,7 @@ const cartRoute = require("./routes/user/cartRoute")
 const orderRoute = require("./routes/user/orderRoute")
 const adminOrderRoute = require("./routes/admin/adminOrderRoute")
 const paymentRoute = require("./routes/user/paymentRoute");
-const User = require("./model/userModel");
+const getAllDatasRoute = require("./routes/admin/getAllDatas")
 
 
 
@@ -42,6 +42,7 @@ app.use("/api/auth",authRoute)
 app.use("/api/products",productRoute)
 app.use("/api/admin",adminUsersRoute)
 app.use("/api/admin",adminOrderRoute)
+app.use("/api/admin",getAllDatasRoute)
 app.use("/api/reviews",userReviewRoute)
 app.use("/api/profile",profileRoute)
 app.use("/api/cart",cartRoute)
@@ -60,7 +61,27 @@ const server = app.listen(PORT,(req,res)=>{                 // starting the serv
     console.log(`The server is running on PORT ${PORT}`);  
 })
 
-const io = new Server(server);                              // initializing socket.io with the server
+const io = new Server(server,{                              // initializing socket.io with the server
+cors:"http://localhost:3000"                             // give connection to connect with frontend admin(since we are trying to use socket with admin first)
+})
+
+
+
+io.on("connection",(socket)=>{                          // making connection with the frontend
+    socket.on("hello",(data)=>{                          // to get data use socket.io , to give data use .emit
+        console.log(data);                               // we can also send from here too using socket.emit,  as it is full duplex and get the data in frontend  using socket.on
+        
+    })
+})
+
+
+
+
+
+
+
+
+
 // io.on("connection",(socket)=>{                              // listening for connection event
 //     // console.log('A User connected');                        // when a user connects, this event is triggered
 //     // socket.on("disconnect",()=>{

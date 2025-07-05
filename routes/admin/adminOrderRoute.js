@@ -1,13 +1,16 @@
-const { getAllOrders, getSingleOrder, updateOrderStatus, deleteOrder } = require('../../controller/admin/order/orderController');
+const { getAllOrders, getSingleOrder, updateOrderStatus, deleteOrder, updatePaymentStatus } = require('../../controller/admin/order/orderController');
 const isAuthenticated = require('../../middleware/isAuthenticated');
 const permitTo = require('../../middleware/permitTo');
 const catchAsync = require('../../services/catchAsync');
 
 const router = require('express').Router();
 
-router.route("/").get(isAuthenticated,permitTo("admin"),catchAsync(getAllOrders))
-router.route("/:id")
+router.route("/orders").get(isAuthenticated,permitTo("admin"),catchAsync(getAllOrders))
+router.route("/orders/paymentstatus/:id").patch(isAuthenticated,permitTo("admin"),catchAsync(updatePaymentStatus))
+router.route("/orders/:id")
 .get(isAuthenticated,permitTo("admin"),catchAsync(getSingleOrder))
 .patch(isAuthenticated,permitTo("admin"),catchAsync(updateOrderStatus)) // update order status by its ID, which is passed as a parameter in the URL
 .delete(isAuthenticated,permitTo("admin"),catchAsync(deleteOrder))
+
+
 module.exports = router;

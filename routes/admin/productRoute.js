@@ -2,13 +2,13 @@ const express = require("express");
 
 const isAuthenticated = require("../../middleware/isAuthenticated");
 const permitTo = require("../../middleware/permitTo");
-const router = express.Router();
+const  router = express.Router();
 
 
 // accessing multer file handling image
 const {multer,storage} = require("../../middleware/multerConfig");   // importing multer,storage from multerConfig.js
 const catchAsync = require("../../services/catchAsync");
-const { editProduct, createProduct, deleteProduct } = require("../../controller/admin/products/productController");
+const { editProduct, createProduct, deleteProduct, updateProductStatus, updateProductStockAndPrice, getOrdersOfProduct } = require("../../controller/admin/products/productController");
 const { getProducts, getProductById } = require("../../controller/global/globalController");
 const upload = multer({storage:storage})    
 
@@ -17,6 +17,15 @@ const upload = multer({storage:storage})
 router.route("/")
 .post(isAuthenticated,permitTo("admin"),upload.single("productImage"), catchAsync(createProduct))
 .get(catchAsync(getProducts))    // since authentication is not required , because usually we see the products without loggin to it e.g Daraz . So ,if no authentication no authorization(restrictTo/permissin)
+
+//  getting how much orders a product made
+router.route("/productOrders/:id").get(isAuthenticated,permitTo("admin"), catchAsync(getOrdersOfProduct))
+
+router.route("/status/:id")
+.patch(isAuthenticated,permitTo("admin"),catchAsync(updateProductStatus))
+
+router.route("/stockandprice/:id")
+.patch(isAuthenticated,permitTo("admin"),catchAsync(updateProductStockAndPrice))
 
 router.route("/:id")
 .get(catchAsync(getProductById))

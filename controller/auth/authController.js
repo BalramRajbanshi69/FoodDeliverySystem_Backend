@@ -99,6 +99,7 @@ exports.loginUser = async(req,res)=>{
 
     // check if that email is registered or not
     const userExist = await User.find({userEmail:email});
+    
     if(userExist.length == 0){
      return res.status(404).json({
         message:"Email is not registered"
@@ -115,7 +116,8 @@ exports.loginUser = async(req,res)=>{
       message:`Your otp is ${otp}. Please don't share to anyone!`
     })
       res.status(200).json({
-        message:"Email sent successfully"  
+        message:"Email sent successfully"  ,
+        data:email
       })
     
   }
@@ -124,6 +126,7 @@ exports.loginUser = async(req,res)=>{
   // verify OTP
  exports.verifyOtp = async(req,res)=>{
   const {email,otp} = req.body;
+  
   if(!email || !otp){
     return res.status(400).json({
       "message":"Please provide email and otp"
@@ -131,7 +134,8 @@ exports.loginUser = async(req,res)=>{
   }
 
   // check if user email is registered or not
-  const userExist = await User.find({userEmail:email});
+  const userExist = await User.find({userEmail:email}).select("+otp +isOtpVerified");
+  
   if(userExist.length == 0){
     return res.status(404).json({
       "message":"Email is not registered"
@@ -139,8 +143,8 @@ exports.loginUser = async(req,res)=>{
   }
 
   // check if otp is correct or not
-  if(userExist[0].otp !== otp){
-    res.status(400).json({
+  if(userExist[0].otp !== otp * 1){
+   return res.status(400).json({
       "message":"invalid otp"
     })
   }else{
@@ -172,7 +176,7 @@ exports.resetPassword = async(req,res)=>{
     })
   }
 
-  const userExist = await User.find({userEmail:email});
+  const userExist = await User.find({userEmail:email}).select("+isOtpVerified");
   if(userExist.length == 0){
     return res.status(404).json({
       message:"User email is not registered"
