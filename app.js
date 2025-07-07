@@ -66,7 +66,7 @@ const server = app.listen(PORT,(req,res)=>{                 // starting the serv
 })
 
 const io = new Server(server,{                              // initializing socket.io with the server
-cors:["http://localhost:3000","http://localhost:5173"]                             // give connection to connect with frontend admin(since we are trying to use socket with admin first)
+cors:["https://food-delivery-system-frontend.vercel.app/","https://food-delivery-system-admin-silk.vercel.app/"]                             // give connection to connect with frontend admin(since we are trying to use socket with admin first)
 })
 
 
