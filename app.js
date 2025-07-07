@@ -4,6 +4,9 @@ const cors = require("cors")
 const app = express();
 const PORT = process.env.PORT || 4000;
 const DBConnection = require("./Database/DB")
+const JWT_SECRET = process.env.JWT_SECRET
+const jwt = require("jsonwebtoken");
+const {promisify} = require("util");
 DBConnection();
 
 const {Server} = require("socket.io");   // socket.io for real-time communication
@@ -33,7 +36,8 @@ const cartRoute = require("./routes/user/cartRoute")
 const orderRoute = require("./routes/user/orderRoute")
 const adminOrderRoute = require("./routes/admin/adminOrderRoute")
 const paymentRoute = require("./routes/user/paymentRoute");
-const getAllDatasRoute = require("./routes/admin/getAllDatas")
+const getAllDatasRoute = require("./routes/admin/getAllDatas");
+const User = require("./model/userModel");
 
 
 
@@ -62,16 +66,40 @@ const server = app.listen(PORT,(req,res)=>{                 // starting the serv
 })
 
 const io = new Server(server,{                              // initializing socket.io with the server
-cors:"http://localhost:3000"                             // give connection to connect with frontend admin(since we are trying to use socket with admin first)
+cors:["http://localhost:3000","http://localhost:5173"]                             // give connection to connect with frontend admin(since we are trying to use socket with admin first)
 })
 
 
+let onlineUsers = []
 
-io.on("connection",(socket)=>{                          // making connection with the frontend
-    socket.on("hello",(data)=>{                          // to get data use socket.io , to give data use .emit
-        console.log(data);                               // we can also send from here too using socket.emit,  as it is full duplex and get the data in frontend  using socket.on
+const addToOnlineUsers = (socketId,userId,role)=>{
+    onlineUsers = onlineUsers?.filter((user)=>user.userId !== userId)
+     onlineUsers.push({socketId,userId,role})
+    // console.log(onlineUsers);
+    
+}
+
+io.on("connection",async(socket)=>{                          // making connection with the frontend
+            // take the token and validate   onlineusers                                        // we can also send from here too using socket.emit,  as it is full duplex and get the data in frontend  using socket.on     
+        const {token} = socket.handshake.auth;
+        if(token){
+             const decoded = await promisify(jwt.verify)(token,JWT_SECRET);
+             const doesUserExist = await User.findOne({_id:decoded.id});
+             
+             if(doesUserExist){
+                addToOnlineUsers(socket.id,doesUserExist.id,doesUserExist.role)
+             }
+             
+        }   
         
-    })
+        // socket orderStatus change/update
+        socket.on("updateOrderStatus",({status,orderId,userId})=>{
+           const findUser = onlineUsers.find((user)=>user.userId == userId)
+           io.to(findUser.socketId).emit("statusUpdated",{status,orderId})       
+           
+        })
+
+    
 })
 
 
