@@ -14,7 +14,10 @@ const {Server} = require("socket.io");   // socket.io for real-time communicatio
 // const Server = require("socket.io").Server;   // socket.io for real-time communication
 
 app.use(cors({
-    origin:"*"
+    // origin:["http://localhost:5173","http://localhost:3000"]
+    // origin:"*"
+origin:["https://food-delivery-system-frontend.vercel.app/","https://food-delivery-system-admin-silk.vercel.app/"]                             // give connection to connect with frontend admin(since we are trying to use socket with admin first)
+
 }))
 app.use(express.json());
 app.use(express.urlencoded({extended : true}))
@@ -95,7 +98,7 @@ io.on("connection",async(socket)=>{                          // making connectio
         // socket orderStatus change/update
         socket.on("updateOrderStatus",({status,orderId,userId})=>{
            const findUser = onlineUsers.find((user)=>user.userId == userId)
-           io.to(findUser.socketId).emit("statusUpdated",{status,orderId})       
+           io.to(findUser?.socketId).emit("statusUpdated",{status,orderId})       
            
         })
 
