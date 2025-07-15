@@ -15,12 +15,13 @@ const {Server} = require("socket.io");   // socket.io for real-time communicatio
 
 app.use(cors({
     origin: [
-        "https://food-delivery-system-frontend.vercel.app/", 
-        "https://food-delivery-system-admin-silk.vercel.app/" 
+        "https://food-delivery-system-frontend.vercel.app", 
+        "https://food-delivery-system-admin-silk.vercel.app",  
     ],
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], 
-    credentials: true 
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    credentials: true
 }));
+
 
 
 app.use(express.json());
@@ -73,7 +74,7 @@ const server = app.listen(PORT,(req,res)=>{                 // starting the serv
 })
 
 const io = new Server(server,{                              // initializing socket.io with the server
-cors:["https://food-delivery-system-frontend.vercel.app/","https://food-delivery-system-admin-silk.vercel.app/"]                             // give connection to connect with frontend admin(since we are trying to use socket with admin first)
+cors:["https://food-delivery-system-frontend.vercel.app","https://food-delivery-system-admin-silk.vercel.app"]                             // give connection to connect with frontend admin(since we are trying to use socket with admin first)
 })
 
 
