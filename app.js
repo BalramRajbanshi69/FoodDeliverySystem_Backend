@@ -14,13 +14,17 @@ const {Server} = require("socket.io");   // socket.io for real-time communicatio
 // const Server = require("socket.io").Server;   // socket.io for real-time communication
 
 app.use(cors({
-    // origin:["http://localhost:5173","http://localhost:3000"]
-    // origin:"*"
-origin:["https://food-delivery-system-frontend.vercel.app/","https://food-delivery-system-admin-silk.vercel.app/"],                             // give connection to connect with frontend admin(since we are trying to use socket with admin first)
-methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-credentials: true 
+    origin: [
+        "https://food-delivery-system-frontend.vercel.app/", // Keep this if frontend sometimes sends with slash
+        "https://food-delivery-system-frontend.vercel.app",  // <-- ADD THIS (no trailing slash)
+        "https://food-delivery-system-admin-silk.vercel.app/", // Keep this if admin frontend sometimes sends with slash
+        "https://food-delivery-system-admin-silk.vercel.app"   // <-- ADD THIS (no trailing slash)
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], 
+    credentials: true 
+}));
 
-}))
+
 app.use(express.json());
 app.use(express.urlencoded({extended : true}))
 
