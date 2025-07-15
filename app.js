@@ -15,8 +15,8 @@ const {Server} = require("socket.io");   // socket.io for real-time communicatio
 
 app.use(cors({
     origin: [
-        "https://food-delivery-system-frontend.vercel.app",  // <-- ADD THIS (no trailing slash)
-        "https://food-delivery-system-admin-silk.vercel.app"   // <-- ADD THIS (no trailing slash)
+        "https://food-delivery-system-frontend.vercel.app", 
+        "https://food-delivery-system-admin-silk.vercel.app" 
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], 
     credentials: true 
