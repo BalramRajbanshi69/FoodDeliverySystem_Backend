@@ -17,6 +17,8 @@ app.use(cors({
     origin: [
         "https://food-delivery-system-frontend.vercel.app", 
         "https://food-delivery-system-admin-silk.vercel.app",  
+         "http://localhost:5173",
+          "http://localhost:3000"
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true
