@@ -13,13 +13,15 @@ const {Server} = require("socket.io");   // socket.io for real-time communicatio
 // OR
 // const Server = require("socket.io").Server;   // socket.io for real-time communication
 
+const allowedOrigins = [
+    "https://food-delivery-system-frontend.vercel.app",
+    "https://food-delivery-system-admin-silk.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000"
+];
+
 app.use(cors({
-    origin: [
-        "https://food-delivery-system-frontend.vercel.app", 
-        "https://food-delivery-system-admin-silk.vercel.app",  
-         "http://localhost:5173",
-          "http://localhost:3000"
-    ],
+    origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true
 }));
@@ -75,9 +77,13 @@ const server = app.listen(PORT,(req,res)=>{                 // starting the serv
     console.log(`The server is running on PORT ${PORT}`);  
 })
 
-const io = new Server(server,{                              // initializing socket.io with the server
-cors:["https://food-delivery-system-frontend.vercel.app","https://food-delivery-system-admin-silk.vercel.app"]                             // give connection to connect with frontend admin(since we are trying to use socket with admin first)
-})
+const io = new Server(server, {
+    cors: {
+        origin: allowedOrigins,
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+        credentials: true
+    }
+});
 
 
 let onlineUsers = []
