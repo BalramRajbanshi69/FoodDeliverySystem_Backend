@@ -10,9 +10,6 @@ const jwt = require("jsonwebtoken");
 const {promisify} = require("util");
 DBConnection();
 
-const {Server} = require("socket.io");   // socket.io for real-time communication
-// OR
-// const Server = require("socket.io").Server;   // socket.io for real-time communication
 
 const allowedOrigins = [
     "https://food-delivery-system-frontend.vercel.app",
@@ -26,6 +23,14 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true
 }));
+
+const {Server} = require("socket.io");   // socket.io for real-time communication
+// OR
+// const Server = require("socket.io").Server;   // socket.io for real-time communication
+
+// console.log(JWT_SECRET);
+
+
 
 
 
@@ -152,3 +157,13 @@ const getSocketId = ()=>{
 }
 
 module.exports.getSocketId = getSocketId;  // exporting the getSocketId function to use it in other files
+
+
+
+
+
+
+
+
+
+

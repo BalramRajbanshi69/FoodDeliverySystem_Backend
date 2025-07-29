@@ -1,6 +1,6 @@
 // const jwt = require("jsonwebtoken");
 // const JWT_SECRET = process.env.JWT_SECRET
-// const {promisify} = require("util");
+// // const {promisify} = require("util");
 // const User = require("../model/userModel");
 // const isAuthenticated = async(req,res,next)=>{
 //     const token = req.headers.authorization;
@@ -9,18 +9,20 @@
 //             message:"Please login"
 //         })
 //     }
-//     // verify if token is legit or not
-//     // first way
-//   //   try {
-//   //   const data = await jwt.verify(token, JWT_SECRET);
-//   //   req.user = data.user
-//   //   next();
-//   // } catch (err) {
-//   //   return res.status(401).json({
-//   //     message: "Invalid token"
-//   //   });
-//   // }
+    // verify if token is legit or not
+    // first way
+//     try {
+//     const data = await jwt.verify(token, JWT_SECRET);
+//     req.user = data.user
+//     next();
+//   } catch (err) {
+//     return res.status(401).json({
+//       message: "Invalid token"
+//     });
+//   }
+// }
 
+//   module.exports = isAuthenticated
 
 
 //     // alternative waY second
@@ -63,7 +65,7 @@
 
 
 
-
+require("dotenv").config()
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
 const { promisify } = require("util");
@@ -71,6 +73,8 @@ const User = require("../model/userModel");
 
 const isAuthenticated = async (req, res, next) => {
     const token = req.headers.authorization;
+
+    // const token = req.headers.authorization && req.headers.authorization.split(" ")[1];
 
     if (!token) {
         return res.status(403).json({
@@ -99,4 +103,12 @@ const isAuthenticated = async (req, res, next) => {
 };
 
 module.exports = isAuthenticated;
+
+
+
+
+
+
+
+
 

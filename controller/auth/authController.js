@@ -3,7 +3,9 @@ const bcrypt = require("bcryptjs");
 const User = require("../../model/userModel")
 const jwt = require("jsonwebtoken");
 const { sendEmail } = require("../../services/sendEmail");
-const JWT_SECRET=process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET;
+// console.log(JWT_SECRET);
+
 
 // register user
 exports.registerUser = async(req,res)=>{
@@ -44,50 +46,31 @@ const {email,password,phoneNumber,username} = req.body
 
 
 
-// login user
-exports.loginUser = async(req,res)=>{
+
+exports.loginUser  = async (req, res) => {
     try {
-      const {email,password} = req.body;
-      
-      if(!email || !password){
-        return res.status(400).json({
-          message:"Please fill all the required fields!"
-        })
-      }
-
-      const userFound = await User.find({userEmail:email});
-      if(userFound.length == 0){
-        return res.status(400).json({
-          message:"User with that email not registered"
-        })
-      }
-
-    //   alternative way
-      // const userFound = await User.findOne({userEmail:email});
-    // if(!userFound){
-    //     user not registered yet
-    // }
-
-      const isMatched = bcrypt.compareSync(password,userFound[0].userPassword);
-      if(!isMatched){
-        res.status(400).json({
-          message:"Invalid credentials"
-        })
-      }else{
-        const token = jwt.sign({id:userFound[0]._id},JWT_SECRET,{
-          expiresIn:"30d"
-        })
-        return res.status(200).json({
-          message:"User logged in successfully",
-          data:userFound,
-          token:token
-        })
-      }
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ message: "Please fill all the required fields!" });
+        }
+        const userFound = await User.findOne({ userEmail: email });
+        if (!userFound) {
+            return res.status(400).json({ message: "User  with that email not registered" });
+        }
+        const isMatched = bcrypt.compareSync(password, userFound.userPassword);
+        if (!isMatched) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        } else {
+            const token = jwt.sign({ id: userFound._id }, JWT_SECRET, { expiresIn: "30d" });
+            // console.log(token);
+            
+            return res.status(200).json({ message: "User  logged in successfully", data: userFound, token });
+        }
     } catch (error) {
-         console.error("Login error:", error);
+        console.error("Login error:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
-  }
+};
 
 
   // forgot Password
