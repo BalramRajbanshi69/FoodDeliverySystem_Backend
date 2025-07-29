@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors")
 const app = express();
+const path = require("path");
 const PORT = process.env.PORT || 4000;
 const DBConnection = require("./Database/DB")
 const JWT_SECRET = process.env.JWT_SECRET
@@ -35,7 +36,7 @@ app.use(express.urlencoded({extended : true}))
 // telling node.js to give access to uploads folder so that backend database can see the image make public
 // app.use(express.static("./"))   // if you want to make public all of them localhost:PORT/whatyouwanttoaccess  
 // multer    
-app.use(express.static("./uploads"))      
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));     
 
 
 // ROUTES

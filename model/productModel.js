@@ -23,7 +23,8 @@ const productSchema = new Schema({
         required:[true, 'productStatus is required'] 
     },
     productImage:{
-        type:String
+        type:[String],
+        required:true
     }
 
 },{

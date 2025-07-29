@@ -4,15 +4,15 @@ const BACKEND_URL = process.env.BACKEND_URL;
 const fs = require("fs");
 
 exports.createProduct = async (req, res) => {
-  const file = req.file; // since file comes in req.file not in req.body
-  let filePath;
-  if (!file) {
-    // here if not file from created product set to default image
-    filePath =
-      "https://plus.unsplash.com/premium_photo-1664474619075-644dd191935f?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aW1hZ2V8ZW58MHx8MHx8fDA%3D";
-  } else {
-    filePath = req.file.filename;
-  }
+    const file = req.file;
+    let imageRelativePath;
+
+    if (!file) {
+        imageRelativePath = "https://plus.unsplash.com/premium_photo-1664474619075-644dd191935f?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aW1hZ2V8ZW58MHx8MHx8fDA%3D";
+    } else {
+
+        imageRelativePath = `/uploads/${req.file.filename}`;
+    }
 
   const {
     productName,
@@ -40,7 +40,7 @@ exports.createProduct = async (req, res) => {
     productPrice,
     productStockQuantity,
     productStatus,
-    productImage: BACKEND_URL + filePath // now backend developer can easily see the image in url
+    productImage: [imageRelativePath]
   });
   await productData.save();
   res.status(200).json({
@@ -67,9 +67,9 @@ exports.editProduct = async(req,res)=>{
     }
     
     
-    const oldProductImage = oldData.productImage // http://localhost:3000/1698943267271-bunImage.png"
+    const oldProductImage = oldData.productImage 
     const lengthToCut  = BACKEND_URL.length
-    const finalFilePathAfterCut = oldProductImage.slice(lengthToCut) // 1698943267271-bunImage.png
+    const finalFilePathAfterCut = oldProductImage.slice(lengthToCut) 
     if(req.file && req.file.filename){
         // REMOVE FILE FROM UPLOADS FOLDER
             fs.unlink("./uploads/" +  finalFilePathAfterCut,(err)=>{

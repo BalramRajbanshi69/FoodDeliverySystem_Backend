@@ -1,30 +1,84 @@
+// const jwt = require("jsonwebtoken");
+// const JWT_SECRET = process.env.JWT_SECRET
+// const {promisify} = require("util");
+// const User = require("../model/userModel");
+// const isAuthenticated = async(req,res,next)=>{
+//     const token = req.headers.authorization;
+//     if(!token){
+//     return res.status(403).json({
+//             message:"Please login"
+//         })
+//     }
+//     // verify if token is legit or not
+//     // first way
+//   //   try {
+//   //   const data = await jwt.verify(token, JWT_SECRET);
+//   //   req.user = data.user
+//   //   next();
+//   // } catch (err) {
+//   //   return res.status(401).json({
+//   //     message: "Invalid token"
+//   //   });
+//   // }
+
+
+
+//     // alternative waY second
+//    try {
+//      const decoded = await promisify(jwt.verify)(token,JWT_SECRET);
+//     //  console.log("decoded",decoded);
+     
+//     const doesUserExist = await User.findOne({_id:decoded.id});
+//     if(!doesUserExist){
+//        return res.status(403).json({
+//             message:"User doesnot exist with that token/id"
+//         })
+//     } 
+//     req.user = doesUserExist
+//     next()
+//    } catch (error) {
+//     res.status(400).json({
+//         message:error.message
+//     })
+//    }
+
+
+// // third alternative
+// //  try {
+// //     const data = await jwt.verify(token, JWT_SECRET);
+// //     req.user = data.user;
+// //     next();
+// //   } catch (error) {
+// //     return res.status(401).json({
+// //       msg: "Invalid Token",
+// //     });
+// //   }
+
+
+
+   
+// }
+
+// module.exports = isAuthenticated
+
+
+
+
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = process.env.JWT_SECRET
-const {promisify} = require("util");
+const JWT_SECRET = process.env.JWT_SECRET;
+const { promisify } = require("util");
 const User = require("../model/userModel");
-const isAuthenticated = async(req,res,next)=>{
+
+const isAuthenticated = async (req, res, next) => {
     const token = req.headers.authorization;
-    if(!token){
-    return res.status(403).json({
-            message:"Please login"
-        })
+
+    if (!token) {
+        return res.status(403).json({
+            message: "Please login"
+        });
     }
-    // verify if token is legit or not
-    // first way
-  //   try {
-  //   const data = await jwt.verify(token, JWT_SECRET);
-  //   req.user = data.user
-  //   next();
-  // } catch (err) {
-  //   return res.status(401).json({
-  //     message: "Invalid token"
-  //   });
-  // }
 
-
-
-    // alternative waY second
-   try {
+    try {
      const decoded = await promisify(jwt.verify)(token,JWT_SECRET);
     //  console.log("decoded",decoded);
      
@@ -41,22 +95,8 @@ const isAuthenticated = async(req,res,next)=>{
         message:error.message
     })
    }
+    
+};
 
+module.exports = isAuthenticated;
 
-// third alternative
-//  try {
-//     const data = await jwt.verify(token, JWT_SECRET);
-//     req.user = data.user;
-//     next();
-//   } catch (error) {
-//     return res.status(401).json({
-//       msg: "Invalid Token",
-//     });
-//   }
-
-
-
-   
-}
-
-module.exports = isAuthenticated
