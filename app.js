@@ -105,6 +105,7 @@ io.on("connection",async(socket)=>{                          // making connectio
             // take the token and validate   onlineusers                                        // we can also send from here too using socket.emit,  as it is full duplex and get the data in frontend  using socket.on     
         const {token} = socket.handshake.auth;
         if(token){
+
              const decoded = await promisify(jwt.verify)(token,JWT_SECRET);
              const doesUserExist = await User.findOne({_id:decoded.id});
              
