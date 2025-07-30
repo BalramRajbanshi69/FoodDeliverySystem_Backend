@@ -6,10 +6,11 @@ const storage = multer.diskStorage({
     const allowedFileTypes = ["image/jpg","image/png","image/jpeg"];
     if(!allowedFileTypes.includes(file.mimetype)){
         cb(new Error("This file cannot be supported"))  // cb means callback(err,success)
-        return
+        return 
     }
     
-    cb(null, './uploads')  // ./uploads where you want to have your images files in root 
+    // cb(null, './uploads')  // ./uploads where you want to have your images files in root 
+    cb(null, path.join(__dirname, 'uploads')); // Use absolute path
   },
   filename: function (req, file, cb) {
     cb(null, Date.now()+"-"+ file.originalname)   // Date.now will show the date in millisecond to override multiple same file upload
