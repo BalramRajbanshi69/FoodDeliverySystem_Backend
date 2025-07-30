@@ -268,6 +268,12 @@ exports.deleteProduct = async (req, res) => {
             { $pull: { cart: { product: id } } }
         );
 
+           // --- NEW LOGIC: Remove the product from all existing orders ---
+        await Order.updateMany(
+            { 'items.product': id }, // Find orders where any item in the 'items' array has a 'product' field matching the deleted product's ID
+            { $pull: { items: { product: id } } } // Remove that specific item from the 'items' array of found orders
+        );
+
         res.status(200).json({
             success: true,
             message: "Product and associated image deleted successfully",
