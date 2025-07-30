@@ -1,6 +1,6 @@
 const Order = require("../../../model/orderModel");
 const Product = require("../../../model/productModel");
-const BACKEND_URL = process.env.BACKEND_URL;
+// const BACKEND_URL = process.env.BACKEND_URL;
 const fs = require("fs").promises;
 const User = require("../../../model/userModel");
 const path = require("path");
@@ -46,7 +46,7 @@ exports.createProduct = async (req, res) => {
     productImage: [imageRelativePath],
     user: userId
   });
-  await productData.save();
+//   await productData.save();
   res.status(200).json({
     message: "Product added successfully",
     data: productData,
