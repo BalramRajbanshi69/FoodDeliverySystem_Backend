@@ -6,7 +6,7 @@ const User = require("../../../model/userModel");
 const path = require("path");
 
 exports.createProduct = async (req, res) => {
-     const userId = req.user.id;
+     const userId = req.user?.id;
     const file = req.file;
     let imageRelativePath;
 
