@@ -4,13 +4,15 @@ const isAuthenticated = require("../../middleware/isAuthenticated");
 const permitTo = require("../../middleware/permitTo");
 const  router = express.Router();
 
+const upload = require("../../middleware/multerConfig")
+
 // accessing multer file handling image
-const {multer,storage} = require("../../middleware/multerConfig");   // importing multer,storage from multerConfig.js
+// const {multer,storage} = require("../../middleware/multerConfig");   // importing multer,storage from multerConfig.js
 const catchAsync = require("../../services/catchAsync");
 const { createProduct, getOrdersOfProduct, updateProductStatus, updateProductStockAndPrice, deleteProduct, editProduct } = require("../../controller/admin/products/productController");
 const { getProducts, getProductById } = require("../../controller/global/globalController");
 
-const upload = multer({storage:storage})    
+// const upload = multer({storage:storage})    
 
 // here before creating products , need to see if somebody user/admin/super-admin/customer is logged in authenticated or not. After give access/permission to customer/admin/super-admin to whom you want to give permission to create products,
 //  after if need to create image in products before creating products need multer . 

@@ -1,5 +1,6 @@
 const Order = require("../../../model/orderModel");
 const Product = require("../../../model/productModel");
+const cloudinary = require("cloudinary").v2;
 // const BACKEND_URL = process.env.BACKEND_URL;
 const fs = require("fs").promises;
 const User = require("../../../model/userModel");
@@ -7,14 +8,15 @@ const path = require("path");
 
 exports.createProduct = async (req, res) => {
      const userId = req.user?.id;
-    const file = req.file;
-    let imageRelativePath;
+     let imageURL;
+    // const file = req.file;
+    // let imageRelativePath;
 
-    if (!file) {
-        imageRelativePath = "https://plus.unsplash.com/premium_photo-1664474619075-644dd191935f?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aW1hZ2V8ZW58MHx8MHx8fDA%3D";
+    if (!req.file) {
+        imageURL = "https://plus.unsplash.com/premium_photo-1664474619075-644dd191935f?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aW1hZ2V8ZW58MHx8MHx8fDA%3D";
     } else {
  
-        imageRelativePath = `/uploads/${req.file.filename}`;
+        imageURL = req.file.path;
     }
 
   const {
@@ -43,7 +45,7 @@ exports.createProduct = async (req, res) => {
     productPrice,
     productStockQuantity,
     productStatus,
-    productImage: [imageRelativePath],
+    productImage: [imageURL],
     user: userId
   });
 //   await productData.save();
@@ -104,66 +106,135 @@ exports.createProduct = async (req, res) => {
 
 
 // relative path
-exports.editProduct = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { productName, productDescription, productPrice, productStatus, productStockQuantity } = req.body;
+// exports.editProduct = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         const { productName, productDescription, productPrice, productStatus, productStockQuantity } = req.body;
 
-        if (!productName || !productDescription || !productPrice || !productStatus || !productStockQuantity || !id) {
-            return res.status(400).json({
-                message: "Please provide all required fields"
-            });
-        }
+//         if (!productName || !productDescription || !productPrice || !productStatus || !productStockQuantity || !id) {
+//             return res.status(400).json({
+//                 message: "Please provide all required fields"
+//             });
+//         }
 
-        const oldData = await Product.findById(id);
-        if (!oldData) {
-            return res.status(404).json({
-                message: "No data found with that id"
-            });
-        }
+//         const oldData = await Product.findById(id);
+//         if (!oldData) {
+//             return res.status(404).json({
+//                 message: "No data found with that id"
+//             });
+//         }
 
-        // Security check: Only the product creator can edit it.
-        if (oldData.user.toString() !== req.user.id) {
-            return res.status(401).json({ error: "You are not authorized to edit this product" });
-        }
+//         // Security check: Only the product creator can edit it.
+//         if (oldData.user.toString() !== req.user.id) {
+//             return res.status(401).json({ error: "You are not authorized to edit this product" });
+//         }
 
-        const oldProductImage = oldData.productImage[0];
+//         const oldProductImage = oldData.productImage[0];
         
-        let newImageRelativePath;
-        if (req.file && req.file.filename) {
-            // Delete the old file using promises
-            const oldFilePath = path.join(__dirname, "../..", oldProductImage);
-            try {
-                await fs.unlink(oldFilePath);
-                console.log("Old file deleted successfully");
-            } catch (err) {
-                console.error("Error deleting old file:", err);
-            }
-            // CRITICAL FIX: Store the new image path as a relative path, not a full URL
-            newImageRelativePath = `/uploads/${req.file.filename}`;
-        } else {
-            newImageRelativePath = oldProductImage;
-        }
+//         let newImageRelativePath;
+//         if (req.file && req.file.filename) {
+//             // Delete the old file using promises
+//             const oldFilePath = path.join(__dirname, "../..", oldProductImage);
+//             try {
+//                 await fs.unlink(oldFilePath);
+//                 console.log("Old file deleted successfully");
+//             } catch (err) {
+//                 console.error("Error deleting old file:", err);
+//             }
+//             // CRITICAL FIX: Store the new image path as a relative path, not a full URL
+//             newImageRelativePath = `/uploads/${req.file.filename}`;
+//         } else {
+//             newImageRelativePath = oldProductImage;
+//         }
 
-        const datas = await Product.findByIdAndUpdate(id, {
-            productName,
-            productDescription,
-            productPrice,
-            productStatus,
-            productStockQuantity,
-            productImage: [newImageRelativePath]
-        }, {
-            new: true,
-        });
+//         const datas = await Product.findByIdAndUpdate(id, {
+//             productName,
+//             productDescription,
+//             productPrice,
+//             productStatus,
+//             productStockQuantity,
+//             productImage: [newImageRelativePath]
+//         }, {
+//             new: true,
+//         });
 
-        res.status(200).json({
-            message: "Product updated successfully",
-            data: datas
-        });
-    } catch (error) {
-        console.error("Edit product error:", error);
-        res.status(500).json({ error: "Internal server error" });
+//         res.status(200).json({
+//             message: "Product updated successfully",
+//             data: datas
+//         });
+//     } catch (error) {
+//         console.error("Edit product error:", error);
+//         res.status(500).json({ error: "Internal server error" });
+//     }
+// };
+
+
+
+exports.editProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { productName, productDescription, productPrice, productStatus, productStockQuantity } = req.body;
+
+    if (!productName || !productDescription || !productPrice || !productStatus || !productStockQuantity || !id) {
+      return res.status(400).json({
+        message: "Please provide all required fields"
+      });
     }
+
+    const oldData = await Product.findById(id);
+    if (!oldData) {
+      return res.status(404).json({
+        message: "No data found with that id"
+      });
+    }
+
+    // Security check: Only the product creator can edit it.
+    if (oldData.user.toString() !== req.user.id) {
+      return res.status(401).json({ error: "You are not authorized to edit this product" });
+    }
+
+    const oldProductImageURL = oldData.productImage[0];
+    let newImageURL = oldProductImageURL;
+
+    if (req.file) { // A new file was uploaded to Cloudinary
+      // Extract the public_id from the old image URL
+      const parts = oldProductImageURL.split('/');
+      const filenameWithExtension = parts[parts.length - 1]; // e.g., 'product-123456789.jpg'
+      const oldPublicId = parts[parts.length - 2] + '/' + filenameWithExtension.split('.')[0]; // e.g., 'e-commerce-products/product-123456789'
+      
+      // Delete the old file from Cloudinary, but only if it's not the default image
+      if (!oldProductImageURL.startsWith("https://plus.unsplash.com")) {
+        try {
+          await cloudinary.uploader.destroy(oldPublicId);
+          console.log("Old image deleted from Cloudinary successfully");
+        } catch (err) {
+          console.error("Error deleting old image from Cloudinary:", err);
+        }
+      }
+      
+      // Set the new image URL from the uploaded file
+      newImageURL = req.file.path;
+    }
+
+    const datas = await Product.findByIdAndUpdate(id, {
+      productName,
+      productDescription,
+      productPrice,
+      productStatus,
+      productStockQuantity,
+      productImage: [newImageURL]
+    }, {
+      new: true,
+    });
+
+    res.status(200).json({
+      message: "Product updated successfully",
+      data: datas
+    });
+  } catch (error) {
+    console.error("Edit product error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };
 
 
@@ -214,74 +285,129 @@ exports.editProduct = async (req, res) => {
 // delete products
 
 
+// exports.deleteProduct = async (req, res) => {
+//     try {
+//         const id = req.params.id;
+//         if (!id) {
+//             return res.status(400).json({ error: "Please provide product ID" });
+//         }
+
+//         // Find the product to get its image path
+//         const product = await Product.findById(id);
+//         if (!product) {
+//             return res.status(404).json({ error: "Product not found" });
+//         }
+
+//         // Extract the relative path for the image
+//         let imagePath = product.productImage;
+//         let relativeFilePath = null;
+
+//         // Handle case where productImage is an array
+//         if (Array.isArray(imagePath)) {
+//             imagePath = imagePath[0]; // Take the first image if it's an array
+//         }
+
+//         if (imagePath && typeof imagePath === "string") {
+//             // Assume imagePath is a relative path (e.g., "1698943267271-bunImage.png" or "/uploads/1698943267271-bunImage.png")
+//             relativeFilePath = imagePath.startsWith("/uploads/")
+//                 ? imagePath.slice("/uploads/".length) // Remove "/uploads/" prefix
+//                 : imagePath; // Use as-is if no prefix
+//         }
+
+//         // Delete the image file from uploads folder if it exists
+//         if (relativeFilePath) {
+//             const fullPath = path.join(__dirname, "../../../uploads", relativeFilePath);
+//             try {
+//                 await fs.access(fullPath); // Check if file exists
+//                 await fs.unlink(fullPath);
+//                 console.log(`Successfully deleted file: ${fullPath}`);
+//             } catch (err) {
+//                 if (err.code === "ENOENT") {
+//                     console.log(`File not found at ${fullPath}, skipping deletion`);
+//                 } else {
+//                     console.error(`Error deleting file at ${fullPath}:`, err);
+//                 }
+//             }
+//         }
+
+//         // Delete the product from the database
+//         await Product.findByIdAndDelete(id);
+
+//         // Remove the product from all user carts
+//         await User.updateMany(
+//             {},
+//             { $pull: { cart: { product: id } } }
+//         );
+
+//            // --- NEW LOGIC: Remove the product from all existing orders ---
+//         await Order.updateMany(
+//             { 'items.product': id }, // Find orders where any item in the 'items' array has a 'product' field matching the deleted product's ID
+//             { $pull: { items: { product: id } } } // Remove that specific item from the 'items' array of found orders
+//         );
+
+//         res.status(200).json({
+//             success: true,
+//             message: "Product and associated image deleted successfully",
+//         });
+//     } catch (error) {
+//         console.error("Delete product error:", error);
+//         res.status(500).json({ error: "Internal server error" });
+//     }
+// };
+
+
 exports.deleteProduct = async (req, res) => {
-    try {
-        const id = req.params.id;
-        if (!id) {
-            return res.status(400).json({ error: "Please provide product ID" });
-        }
-
-        // Find the product to get its image path
-        const product = await Product.findById(id);
-        if (!product) {
-            return res.status(404).json({ error: "Product not found" });
-        }
-
-        // Extract the relative path for the image
-        let imagePath = product.productImage;
-        let relativeFilePath = null;
-
-        // Handle case where productImage is an array
-        if (Array.isArray(imagePath)) {
-            imagePath = imagePath[0]; // Take the first image if it's an array
-        }
-
-        if (imagePath && typeof imagePath === "string") {
-            // Assume imagePath is a relative path (e.g., "1698943267271-bunImage.png" or "/uploads/1698943267271-bunImage.png")
-            relativeFilePath = imagePath.startsWith("/uploads/")
-                ? imagePath.slice("/uploads/".length) // Remove "/uploads/" prefix
-                : imagePath; // Use as-is if no prefix
-        }
-
-        // Delete the image file from uploads folder if it exists
-        if (relativeFilePath) {
-            const fullPath = path.join(__dirname, "../../../uploads", relativeFilePath);
-            try {
-                await fs.access(fullPath); // Check if file exists
-                await fs.unlink(fullPath);
-                console.log(`Successfully deleted file: ${fullPath}`);
-            } catch (err) {
-                if (err.code === "ENOENT") {
-                    console.log(`File not found at ${fullPath}, skipping deletion`);
-                } else {
-                    console.error(`Error deleting file at ${fullPath}:`, err);
-                }
-            }
-        }
-
-        // Delete the product from the database
-        await Product.findByIdAndDelete(id);
-
-        // Remove the product from all user carts
-        await User.updateMany(
-            {},
-            { $pull: { cart: { product: id } } }
-        );
-
-           // --- NEW LOGIC: Remove the product from all existing orders ---
-        await Order.updateMany(
-            { 'items.product': id }, // Find orders where any item in the 'items' array has a 'product' field matching the deleted product's ID
-            { $pull: { items: { product: id } } } // Remove that specific item from the 'items' array of found orders
-        );
-
-        res.status(200).json({
-            success: true,
-            message: "Product and associated image deleted successfully",
-        });
-    } catch (error) {
-        console.error("Delete product error:", error);
-        res.status(500).json({ error: "Internal server error" });
+  try {
+    const id = req.params.id;
+    if (!id) {
+      return res.status(400).json({ error: "Please provide product ID" });
     }
+
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    // Extract the image URL and public_id from the product data
+    const oldProductImageURL = product.productImage[0];
+
+    // Delete the image from Cloudinary, but only if it's not the default image
+    if (oldProductImageURL && !oldProductImageURL.startsWith("https://plus.unsplash.com")) {
+      const parts = oldProductImageURL.split('/');
+      const filenameWithExtension = parts[parts.length - 1];
+      const oldPublicId = parts[parts.length - 2] + '/' + filenameWithExtension.split('.')[0];
+      
+      try {
+        await cloudinary.uploader.destroy(oldPublicId);
+        console.log(`Successfully deleted image from Cloudinary with public_id: ${oldPublicId}`);
+      } catch (err) {
+        console.error(`Error deleting image from Cloudinary with public_id: ${oldPublicId}:`, err);
+      }
+    }
+
+    // Delete the product from the database
+    await Product.findByIdAndDelete(id);
+
+    // Remove the product from all user carts
+    await User.updateMany(
+      {},
+      { $pull: { cart: { product: id } } }
+    );
+
+    // Remove the product from all existing orders
+    await Order.updateMany(
+      { 'items.product': id },
+      { $pull: { items: { product: id } } }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Product and associated image deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete product error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };
 
 
