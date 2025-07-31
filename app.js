@@ -127,12 +127,6 @@ io.on("connection",async(socket)=>{                          // making connectio
 
 
 
-
-
-
-
-
-
 // io.on("connection",(socket)=>{                              // listening for connection event
 //     // console.log('A User connected');                        // when a user connects, this event is triggered
 //     // socket.on("disconnect",()=>{
