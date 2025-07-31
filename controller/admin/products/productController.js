@@ -6,33 +6,33 @@ const User = require("../../../model/userModel");
 const path = require("path");
 
 exports.createProduct = async (req, res) => {
-    try{
+    try {
         const userId = req.user?.id;
-    const file = req.file;
-    let imageRelativePath;
+        const file = req.file;
+        let imageRelativePath;
 
-    if (!file) {
-        imageRelativePath = "https://plus.unsplash.com/premium_photo-1664474619075-644dd191935f?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aW1hZ2V8ZW58MHx8MHx8fDA%3D";
-    } else {
- 
-        imageRelativePath = `/uploads/${req.file.filename}`;
-    }
+        if (!file) {
+            imageRelativePath = "https://plus.unsplash.com/premium_photo-1664474619075-644dd191935f?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aW1hZ2V8ZW58MHx8MHx8fDA%3D";
+        } else {
+            imageRelativePath = `/uploads/${req.file.filename}`;
+        }
 
-  const {
-    productName,
-    productDescription,
-    productPrice,
-    productStockQuantity,
-    productStatus,
-  } = req.body;
-  if (
-    !productName ||
-    !productDescription ||
-    !productPrice ||
-    !productStockQuantity ||
-    !productStatus
-  ) {
-    if (file) {
+        const {
+            productName,
+            productDescription,
+            productPrice,
+            productStockQuantity,
+            productStatus,
+        } = req.body;
+        
+        if (
+            !productName ||
+            !productDescription ||
+            !productPrice ||
+            !productStockQuantity ||
+            !productStatus
+        ) {
+            if (file) {
                 try {
                     await fs.unlink(file.path);
                 } catch (err) {
@@ -40,22 +40,30 @@ exports.createProduct = async (req, res) => {
                 }
             }
 
-    return res.status(400).json({
-      message:
-        "Please provide productName,productDescription,productPrice,productStockQuantity,productStatus",
-    });
-  }
+            return res.status(400).json({
+                message:
+                    "Please provide productName,productDescription,productPrice,productStockQuantity,productStatus",
+            });
+        }
 
-  const productData = await Product.create({
-    productName,
-    productDescription,
-    productPrice,
-    productStockQuantity,
-    productStatus,
-    productImage: [imageRelativePath],
-    user: userId
-  });
-    }catch(error){
+        const productData = await Product.create({
+            productName,
+            productDescription,
+            productPrice,
+            productStockQuantity,
+            productStatus,
+            productImage: [imageRelativePath],
+            user: userId
+        });
+
+        res.status(200).json({
+            message: "Product added successfully",
+            data: productData,
+        });
+
+    } catch (error) {
+        console.error("Error creating product:", error);
+        
         // Clean up uploaded file if there was an error
         if (req.file) {
             try {
@@ -65,14 +73,11 @@ exports.createProduct = async (req, res) => {
             }
         }
         
-        //   await productData.save();
-  res.status(200).json({
-    message: "Product added successfully",
-    data: productData,
-  });
+        res.status(500).json({
+            message: "Error creating product",
+            error: error.message
+        });
     }
-     
-
 };
 
 
