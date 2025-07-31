@@ -6,8 +6,7 @@ const User = require("../../../model/userModel");
 const path = require("path");
 
 exports.createProduct = async (req, res) => {
-    try{
-        const userId = req.user?.id;
+     const userId = req.user?.id;
     const file = req.file;
     let imageRelativePath;
 
@@ -32,14 +31,6 @@ exports.createProduct = async (req, res) => {
     !productStockQuantity ||
     !productStatus
   ) {
-    if (file) {
-                try {
-                    await fs.unlink(file.path);
-                } catch (err) {
-                    console.error("Error cleaning up uploaded file:", err);
-                }
-            }
-
     return res.status(400).json({
       message:
         "Please provide productName,productDescription,productPrice,productStockQuantity,productStatus",
@@ -55,24 +46,11 @@ exports.createProduct = async (req, res) => {
     productImage: [imageRelativePath],
     user: userId
   });
-    }catch(error){
-        // Clean up uploaded file if there was an error
-        if (req.file) {
-            try {
-                await fs.unlink(req.file.path);
-            } catch (err) {
-                console.error("Error cleaning up uploaded file:", err);
-            }
-        }
-        
-        //   await productData.save();
+//   await productData.save();
   res.status(200).json({
     message: "Product added successfully",
     data: productData,
   });
-    }
-     
-
 };
 
 
