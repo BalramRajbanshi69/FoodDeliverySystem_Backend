@@ -17,7 +17,8 @@ exports.createOrder = async(req,res)=>{
         totalAmount,
         shippingAddress,
         phoneNumber,
-        paymentDetails
+        paymentDetails,
+        isDeleted:false
     });
     await createdOrder.save()
     
@@ -31,6 +32,42 @@ exports.createOrder = async(req,res)=>{
         data: createdOrder
     });
 }
+
+const createOrder = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { items } = req.body; // items: [{ productId, quantity }]
+
+    const enrichedItems = await Promise.all(
+      items.map(async (item) => {
+        const product = await Product.findById(item.productId);
+        if (!product) {
+          throw new Error(`Product not found with ID: ${item.productId}`);
+        }
+
+        return {
+          product: product._id,
+          name: product.productName,
+          price: product.productPrice,
+          quantity: item.quantity,
+          isDeleted: false,
+        };
+      })
+    );
+
+    const newOrder = new Order({
+      user: userId,
+      items: enrichedItems,
+    });
+
+    await newOrder.save();
+
+    res.status(201).json({ success: true, order: newOrder });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 
 
