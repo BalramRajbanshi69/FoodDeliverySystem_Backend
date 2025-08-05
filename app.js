@@ -101,29 +101,39 @@ const addToOnlineUsers = (socketId,userId,role)=>{
     
 }
 
-io.on("connection",async(socket)=>{                          // making connection with the frontend
-            // take the token and validate   onlineusers                                        // we can also send from here too using socket.emit,  as it is full duplex and get the data in frontend  using socket.on     
-        const {token} = socket.handshake.auth;
-        if(token){
+// ... (rest of your app.js file)
 
-             const decoded = await promisify(jwt.verify)(token,JWT_SECRET);
-             const doesUserExist = await User.findOne({_id:decoded.id});
-             
-             if(doesUserExist){
-                addToOnlineUsers(socket.id,doesUserExist.id,doesUserExist.role)
-             }
-             
-        }   
-        
-        // socket orderStatus change/update
-        socket.on("updateOrderStatus",({status,orderId,userId})=>{
-           const findUser = onlineUsers.find((user)=>user.userId == userId)
-           io.to(findUser?.socketId).emit("statusUpdated",{status,orderId})       
-           
-        })
+io.on("connection", async (socket) => {
+    const { token } = socket.handshake.auth;
 
-    
-})
+    if (token) {
+        try {
+            const decoded = await promisify(jwt.verify)(token, JWT_SECRET);
+            const doesUserExist = await User.findOne({ _id: decoded.id });
+
+            if (doesUserExist) {
+                addToOnlineUsers(socket.id, doesUserExist.id, doesUserExist.role);
+                // console.log(`User ${doesUserExist.userName} connected with Socket ID: ${socket.id}`);
+            } else {
+                console.log('User from token not found. Disconnecting socket.');
+                // socket.disconnect(true); // Disconnect if user not found
+            }
+        } catch (error) {
+            // This block will catch any errors from jwt.verify
+            // console.error('JWT verification failed:', error.message);
+            socket.disconnect(true); // Disconnect the socket for authentication failure
+        }
+    } else {
+        // console.log('No token provided. Disconnecting socket.');
+        socket.disconnect(true); // Disconnect if no token provided
+    }
+
+    // socket orderStatus change/update
+    socket.on("updateOrderStatus", ({ status, orderId, userId }) => {
+        const findUser = onlineUsers.find((user) => user.userId == userId);
+        io.to(findUser?.socketId).emit("statusUpdated", { status, orderId });
+    });
+});
 
 
 

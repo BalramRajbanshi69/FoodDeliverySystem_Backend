@@ -61,7 +61,8 @@ exports.loginUser  = async (req, res) => {
         if (!isMatched) {
             return res.status(400).json({ message: "Invalid credentials" });
         } else {
-            const token = jwt.sign({ id: userFound._id }, JWT_SECRET, { expiresIn: "30d" });
+            const token = jwt.sign({ id: userFound._id }, JWT_SECRET, { expiresIn: "1h" });
+            // console.log('Secret used for signing:', JWT_SECRET);
             // console.log(token);
             
             return res.status(200).json({ message: "User  logged in successfully", data: userFound, token });
